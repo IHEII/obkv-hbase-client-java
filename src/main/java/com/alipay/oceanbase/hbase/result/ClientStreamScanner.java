@@ -132,4 +132,9 @@ public class ClientStreamScanner extends AbstractClientScanner {
             logger.error(LCD.convert("01-00001"), streamResult.getTableName(), e);
         }
     }
+
+    @Override
+    public boolean renewLease() {
+        return false;
+    }
 }
