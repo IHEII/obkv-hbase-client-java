@@ -36,7 +36,6 @@ import com.alipay.oceanbase.rpc.protocol.payload.impl.execute.mutate.ObTableQuer
 import com.alipay.oceanbase.rpc.protocol.payload.impl.execute.mutate.ObTableQueryAndMutateResult;
 import com.alipay.oceanbase.rpc.protocol.payload.impl.execute.query.*;
 import com.alipay.oceanbase.rpc.protocol.payload.impl.execute.syncquery.ObTableQueryAsyncRequest;
-import com.alipay.oceanbase.rpc.stream.ObTableClientQueryAsyncStreamResult;
 import com.alipay.oceanbase.rpc.stream.ObTableClientQueryStreamResult;
 import com.alipay.sofa.common.thread.SofaThreadPoolExecutor;
 import com.alipay.oceanbase.hbase.exception.OperationTimeoutException;
@@ -492,8 +491,8 @@ public class OHTable implements HTableInterface {
             operationTimeout) {
             public ResultScanner call() throws IOException {
                 byte[] family = new byte[] {};
-                ObTableClientQueryAsyncStreamResult clientQueryAsyncStreamResult;
-                ObTableQueryAsyncRequest request;
+                ObTableClientQueryStreamResult clientQueryStreamResult;
+                ObTableQueryRequest request;
                 ObTableQuery obTableQuery;
                 ObHTableFilter filter;
                 try {
@@ -505,12 +504,12 @@ public class OHTable implements HTableInterface {
                             filter = buildObHTableFilter(scan.getFilter(), scan.getTimeRange(),
                                 scan.getMaxVersions(), null);
                             obTableQuery = buildObTableQuery(filter, scan.getStartRow(), true,
-                                scan.getStopRow(), false, scan.getBatch());
+                                scan.getStopRow(), false, -1);
 
-                            request = buildObTableQueryAsyncRequest(obTableQuery, tableNameString);
-                            clientQueryAsyncStreamResult = (ObTableClientQueryAsyncStreamResult) obTableClient
+                            request = buildObTableQueryRequest(obTableQuery, tableNameString);
+                            clientQueryStreamResult = (ObTableClientQueryStreamResult) obTableClient
                                 .execute(request);
-                            return new ClientStreamScanner(clientQueryAsyncStreamResult,
+                            return new ClientStreamScanner(clientQueryStreamResult,
                                 tableNameString, family, true);
                         }
                     } else {
@@ -527,7 +526,7 @@ public class OHTable implements HTableInterface {
                             //         scan.getStartRow(), true, scan.getBatch());
                             // } else {
                             obTableQuery = buildObTableQuery(filter, scan.getStartRow(), true,
-                                scan.getStopRow(), false, scan.getBatch());
+                                scan.getStopRow(), false, -1);
                             // }
 
                             // not support reverse scan.
@@ -538,11 +537,11 @@ public class OHTable implements HTableInterface {
                             // no support set maxResultSize.
                             // obTableQuery.setMaxResultSize(scan.getMaxResultSize());
 
-                            request = buildObTableQueryAsyncRequest(obTableQuery,
+                            request = buildObTableQueryRequest(obTableQuery,
                                 getTargetTableName(tableNameString, Bytes.toString(family)));
-                            clientQueryAsyncStreamResult = (ObTableClientQueryAsyncStreamResult) obTableClient
+                            clientQueryStreamResult = (ObTableClientQueryStreamResult) obTableClient
                                 .execute(request);
-                            return new ClientStreamScanner(clientQueryAsyncStreamResult,
+                            return new ClientStreamScanner(clientQueryStreamResult,
                                 tableNameString, family, false);
                         }
                     }

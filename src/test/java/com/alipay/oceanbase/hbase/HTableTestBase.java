@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.apache.hadoop.hbase.filter.FilterList.Operator.MUST_PASS_ONE;
@@ -1305,6 +1306,39 @@ public abstract class HTableTestBase {
             }
         }
         Assert.assertEquals(9, res_count);
+
+        scan = new Scan();
+        scan.addFamily(family.getBytes());
+        scan.setStartRow("scanKey1x".getBytes());
+        scan.setStopRow("scanKey3x".getBytes());
+        scan.setMaxVersions(10);
+        scanner = hTable.getScanner(scan);
+
+        res_count = 0;
+        Iterator<Result> iterator = scanner.iterator();
+        while (iterator.hasNext()) {
+            Result result = iterator.next();
+            for (KeyValue keyValue : result.raw()) {
+                res_count += 1;
+            }
+        }
+        Assert.assertEquals(9, res_count);
+
+        scan = new Scan();
+        scan.addFamily(family.getBytes());
+        scan.setStartRow("scanKey5x".getBytes());
+        scan.setStopRow("scanKey10x".getBytes());
+        scan.setMaxVersions(10);
+        scanner = hTable.getScanner(scan);
+
+        res_count = 0;
+        while (scanner.iterator().hasNext()) {
+            Result result = scanner.next();
+            for (KeyValue keyValue : result.raw()) {
+                res_count += 1;
+            }
+        }
+        Assert.assertEquals(0, res_count);
 
         //        // scan with HConstants.EMPTY_START_ROW / HConstants.EMPTY_END_ROW / HConstants.EMPTY_BYTE_ARRAY
         //        scan = new Scan("zScanKey".getBytes(), HConstants.EMPTY_END_ROW);
